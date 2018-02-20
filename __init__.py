@@ -1,41 +1,29 @@
-import time
-import os,sys
-from rpi_rf import RFDevice
-    
+import logging
+from rpi_rf2 import RFDevice
 from modules import cbpi
 from modules.core.hardware import ActorBase, SensorPassive, SensorActive
 from modules.core.props import Property
+import time
 
-class RemoteSwitch(object):
-
-    def __init__(self, key_on = 742333 , key_off = 742325 ,pin= 17):
-       
-        self.pin = pin
-        self.key_off = key_off
-        self.key_on = key_o
-        rfdevice.enable_tx()
-
-    def switchOn(self, device):
-        rfdevice.tx_code(self.key_on, "default", "default")
-        rfdevice.cleanup()  
-
-    def switchOff(self, device):
-        rfdevice.tx_code(self.key_off, "default", "default")
-        rfdevice.cleanup()  
 
 @cbpi.actor
 class Socket433MHz(ActorBase):
-    socket = Property.Select("socket", options=[1, 2, 3, 4, 5, 6])
-    code_on = Property.Text(label="ON Code", configurable=True, description="Enter the code for turning the 433Hz socket on")
-    code_off = Property.Text(label="OFF Code", configurable=True, description="Enter the code for turning the 433Hz socket off")
-    pin =  Property.Text(label="GPIO PIN", configurable=True, description="Enter the code GPIO PIN for the rf transmitter")
-    
-    @classmethod
-    def init_global(cls):
-        cls.device = RemoteSwitch(key_on=self.code_on, key_off = self.code_off, pin=self.pin)
+    code_on = Property.Text("ON Code", configurable=True, description="Enter the code for turning the 433Hz socket on")
+    code_off = Property.Text("OFF Code", configurable=True, description="Enter the code for turning the 433Hz socket off")
+    pin =  Property.Text("GPIO PIN", configurable=True, description="Enter the code GPIO PIN for the rf transmitter")
 
     def on(self, power=100):
-        self.device.switchOn(int(self.socket))
+        logging.basicConfig(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',
+                    format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s',)
+        rfdevice = RFDevice(int(self.pin))
+        rfdevice.enable_tx()
+        rfdevice.tx_code(int(self.code_on), None, None)
+        rfdevice.cleanup()
 
     def off(self):
-        self.device.switchOff(int(self.socket))
+        logging.basicConfig(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',
+                    format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s',)
+        rfdevice = RFDevice(int(self.pin))
+        rfdevice.enable_tx()
+        rfdevice.tx_code(int(self.code_off), None, None)
+        rfdevice.cleanup()
